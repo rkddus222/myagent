@@ -1,4 +1,4 @@
-import { axiosInstance } from './axiosInstance'
+import axiosInstance from './axiosInstance'
 import { Mapping } from '../types/llmAdmin.type'
 
 export const mappingApi = {

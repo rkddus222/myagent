@@ -1,12 +1,8 @@
 import axios from 'axios'
 
-const daquvInterface = {
-  apiUrl: import.meta.env.VITE_DAQUV_API_URL || 'http://localhost:8000'
-}
-
 const axiosInstance = axios.create({
-  baseURL: daquvInterface.apiUrl,
-  withCredentials: true,
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json'
   }

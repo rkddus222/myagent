@@ -25,6 +25,7 @@ const JsonPage = () => {
   const [result, setResult] = useState<string>('')
   const [csv2Result, setCsv2Result] = useState<string>('')
   const [jsonError, setJsonError] = useState<string>('')
+  const [format, setFormat] = useState('json')
 
   const validateJson = (jsonString: string): boolean => {
     try {

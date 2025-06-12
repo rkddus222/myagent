@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { mappingApi } from '@apis/mapping'
-import { Mapping } from '@types/llmAdmin.type'
+import { Mapping } from '@/types/llmAdmin.type'
 
 export const useMappingQuery = () => {
   const queryClient = useQueryClient()

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import { respondentApi } from '../../apis/respondentApi'
 import { toast } from 'react-toastify'
 
@@ -31,25 +31,6 @@ const LlmPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [jsonError, setJsonError] = useState<string>('')
   const [selectedCompany, setSelectedCompany] = useState<string>('none')
-
-  const validateJson = (jsonString: string): boolean => {
-    try {
-      const jsonData = JSON.parse(jsonString)
-      if (!Array.isArray(jsonData)) {
-        setJsonError('JSON은 배열 형식이어야 합니다.')
-        return false
-      }
-      if (!jsonData.every(item => typeof item === 'object' && item !== null && 'question' in item && 'answer' in item)) {
-        setJsonError('각 항목은 question과 answer 필드를 포함하는 객체여야 합니다.')
-        return false
-      }
-      setJsonError('')
-      return true
-    } catch (error) {
-      setJsonError('올바른 JSON 형식이 아닙니다.')
-      return false
-    }
-  }
 
   const handleMultiQuestionsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value

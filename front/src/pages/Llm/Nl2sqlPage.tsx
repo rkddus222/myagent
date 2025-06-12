@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import { nl2sqlApi } from '../../apis/nl2sqlApi'
 import { toast } from 'react-toastify'
 
