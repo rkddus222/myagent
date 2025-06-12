@@ -16,3 +16,12 @@ interface ChainExecution {
 }
 
 export type { ChainExecution }
+
+export interface Mapping {
+  idx: string
+  original_title: string
+  replace_title: string
+  type: string
+  align: string
+  reg_dtm: string
+}
