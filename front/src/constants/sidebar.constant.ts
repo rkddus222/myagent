@@ -20,6 +20,11 @@ const leftSideElements: leftSideElementProps[] = [
     name: 'respondent',
     title: 'Respondent 샷',
     to: '/respondent'
+  },
+  {
+    name: 'dataframe-converter',
+    title: '데이터프레임 변환',
+    to: '/dataframe-converter'
   }
 ]
 

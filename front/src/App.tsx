@@ -10,6 +10,8 @@ import { NotFound, JsonPage } from './pages'
 import Nl2sqlPage from '@pages/Llm/Nl2sqlPage'
 import RespondentPage from '@pages/Llm/RespondentPage'
 import HelpPage from '@pages/Llm/HelpPage'
+import DataFrameConverter from '@pages/DataFrameConverter'
+
 const Layout = () => {
   const { isDarkMode } = useThemeStore()
 
@@ -38,6 +40,7 @@ const Layout = () => {
             <Route path='/help' element={<HelpPage />} />
             <Route path='/nl2sql' element={<Nl2sqlPage />} />
             <Route path='/respondent' element={<RespondentPage />} />
+            <Route path='/dataframe-converter' element={<DataFrameConverter />} />
             <Route path='*' element={<NotFound />} />
           </Routes>
         </div>
