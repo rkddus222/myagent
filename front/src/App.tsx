@@ -10,7 +10,7 @@ import { NotFound, JsonPage } from './pages'
 import Nl2sqlPage from '@pages/Llm/Nl2sqlPage'
 import RespondentPage from '@pages/Llm/RespondentPage'
 import HelpPage from '@pages/Llm/HelpPage'
-import DataFrameConverter from '@pages/DataFrameConverter'
+import DataFrameConverter from '@pages/DataFrame/DataFrameConverter'
 
 const Layout = () => {
   const { isDarkMode } = useThemeStore()
