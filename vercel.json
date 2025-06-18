@@ -4,5 +4,11 @@
   "outputDirectory": "front/dist",
   "installCommand": "cd front && npm install",
   "devCommand": "cd front && npm run dev",
-  "framework": "vite"
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 } 
