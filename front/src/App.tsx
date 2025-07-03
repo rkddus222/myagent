@@ -35,7 +35,7 @@ const Layout = () => {
         <TopNavigationBar />
         <div className='flex-1 bg-background-primary pt-[var(--topbar-height)]'>
           <Routes>
-            <Route path='/' element={<Navigate to='/json' />} />
+            <Route path='/' element={<Navigate to='/help' />} />
             <Route path='/json' element={<JsonPage />} />
             <Route path='/help' element={<HelpPage />} />
             <Route path='/nl2sql' element={<Nl2sqlPage />} />

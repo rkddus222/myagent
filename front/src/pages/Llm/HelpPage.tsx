@@ -19,6 +19,7 @@ const HelpPage = () => {
   const [testResults, setTestResults] = useState<TestResult[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [jsonError, setJsonError] = useState<string>('')
+  const [apiKeyStatus, setApiKeyStatus] = useState<'checking' | 'valid' | 'missing'>('checking')
 
   const validateJson = (jsonString: string): boolean => {
     try {
@@ -158,7 +159,17 @@ const HelpPage = () => {
       setTestResults(results)
     } catch (error) {
       console.error('테스트 중 오류 발생:', error)
-      toast.error('테스트 중 오류가 발생했습니다.')
+      if (error instanceof Error) {
+        if (error.message.includes('OpenAI API 키')) {
+          toast.error('OpenAI API 키가 설정되지 않았습니다. .env 파일에 VITE_OPENAI_API_KEY를 설정해주세요.')
+        } else if (error.message.includes('OpenAI API 오류')) {
+          toast.error(`API 오류: ${error.message}`)
+        } else {
+          toast.error(`테스트 중 오류가 발생했습니다: ${error.message}`)
+        }
+      } else {
+        toast.error('테스트 중 오류가 발생했습니다.')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -176,6 +187,19 @@ const HelpPage = () => {
     navigator.clipboard.writeText(text)
     toast.success('클립보드에 복사되었습니다.')
   }
+
+  // API 키 상태 확인
+  React.useEffect(() => {
+    const checkApiKey = () => {
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+      if (apiKey && apiKey !== 'your_openai_api_key_here' && apiKey !== '') {
+        setApiKeyStatus('valid')
+      } else {
+        setApiKeyStatus('missing')
+      }
+    }
+    checkApiKey()
+  }, [])
 
   const getResultsAsJson = () => {
     if (activeTab === 'match') {
@@ -206,6 +230,31 @@ const HelpPage = () => {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-2">LLM 테스트</h1>
+          {apiKeyStatus === 'checking' && (
+            <div className="flex items-center justify-center text-blue-500">
+              <svg className="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              API 키 확인 중...
+            </div>
+          )}
+          {apiKeyStatus === 'valid' && (
+            <div className="flex items-center justify-center text-green-500">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              OpenAI API 키가 설정되었습니다
+            </div>
+          )}
+          {apiKeyStatus === 'missing' && (
+            <div className="flex items-center justify-center text-red-500">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              OpenAI API 키가 설정되지 않았습니다
+            </div>
+          )}
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8 transform transition-all duration-300 hover:shadow-2xl">
@@ -333,7 +382,7 @@ const HelpPage = () => {
               <button
                 className="flex-1 px-6 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all duration-200 disabled:bg-blue-300 shadow-md hover:shadow-lg flex items-center justify-center"
                 onClick={handleTest}
-                disabled={isLoading}
+                disabled={isLoading || apiKeyStatus === 'missing'}
               >
                 {isLoading ? (
                   <>
