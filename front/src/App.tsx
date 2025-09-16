@@ -11,6 +11,8 @@ import Nl2sqlPage from '@pages/Llm/Nl2sqlPage'
 import RespondentPage from '@pages/Llm/RespondentPage'
 import HelpPage from '@pages/Llm/HelpPage'
 import DataFrameConverter from '@pages/DataFrame/DataFrameConverter'
+import TicTacToePage from '@pages/TicTacToePage'
+import GomokuPage from '@pages/Gomoku/GomokuPage'
 
 const Layout = () => {
   const { isDarkMode } = useThemeStore()
@@ -41,6 +43,8 @@ const Layout = () => {
             <Route path='/nl2sql' element={<Nl2sqlPage />} />
             <Route path='/respondent' element={<RespondentPage />} />
             <Route path='/dataframe-converter' element={<DataFrameConverter />} />
+            <Route path='/tictactoe' element={<TicTacToePage />} />
+            <Route path='/gomoku' element={<GomokuPage />} />
             <Route path='*' element={<NotFound />} />
           </Routes>
         </div>

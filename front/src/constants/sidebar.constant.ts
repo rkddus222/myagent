@@ -25,6 +25,16 @@ const leftSideElements: leftSideElementProps[] = [
     name: 'dataframe-converter',
     title: '데이터프레임 변환',
     to: '/dataframe-converter'
+  },
+  {
+    name: 'tictactoe',
+    title: '틱택토',
+    to: '/tictactoe'
+  },
+  {
+    name: 'gomoku',
+    title: '오목',
+    to: '/gomoku'
   }
 ]
 
