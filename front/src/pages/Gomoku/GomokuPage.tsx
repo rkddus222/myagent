@@ -3,7 +3,7 @@ import GomokuBoard from '../../components/gomoku/GomokuBoard';
 
 const GomokuPage: React.FC = () => {
   const boardSize = 15;
-  const [history, setHistory] = useState([Array(boardSize).fill(Array(boardSize).fill(null))]);
+  const [history, setHistory] = useState<(('B' | 'W' | null)[][])[]>([Array(boardSize).fill(Array(boardSize).fill(null))]);
   const [currentMove, setCurrentMove] = useState(0);
   const blackIsNext = currentMove % 2 === 0;
   const currentSquares = history[currentMove];
@@ -41,7 +41,7 @@ const GomokuPage: React.FC = () => {
     if (calculateWinner(currentSquares) || currentSquares[row][col]) {
       return;
     }
-    const nextSquares = currentSquares.map((r: any) => r.slice());
+    const nextSquares = currentSquares.map((r) => r.slice());
     nextSquares[row][col] = blackIsNext ? 'B' : 'W';
     handlePlay(nextSquares);
   }
@@ -106,15 +106,15 @@ function calculateWinner(squares: ('B' | 'W' | null)[][]) {
 
   // Check columns
   for (let i = 0; i < boardSize; i++) {
-    const col = squares.map(row => row[i]);
+    const col: ('B' | 'W' | null)[] = squares.map(row => row[i]);
     const winner = checkLine(col);
     if (winner) return winner;
   }
 
   // Check diagonals
   for (let i = 0; i < boardSize * 2 - 1; i++) {
-    const diag1 = [];
-    const diag2 = [];
+    const diag1: ('B' | 'W' | null)[] = [];
+    const diag2: ('B' | 'W' | null)[] = [];
     for (let j = 0; j <= i; j++) {
       if (j < boardSize && i - j < boardSize) {
         diag1.push(squares[j][i - j]);
