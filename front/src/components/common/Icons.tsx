@@ -12,7 +12,17 @@ import {
   MdOutlineQuestionAnswer,
   MdOutlineSave,
   MdOutlineSettings,
-  MdSearch
+  MdSearch,
+  MdOutlineCode,
+  MdOutlineDataObject,
+  MdOutlineHelp,
+  MdOutlineStorage,
+  MdOutlinePerson,
+  MdOutlineGames,
+  MdOutlineGrid3X3,
+  MdOutlineFilterNone,
+  MdOutlineNewspaper,
+  MdOutlinePsychology
 } from 'react-icons/md'
 
 const IconList = {
@@ -30,7 +40,15 @@ const IconList = {
   sun: <MdOutlineLightMode />,
   schema: <MdOutlineBook />,
   logout: <MdOutlineLogout />,
-  edit: <MdOutlineEdit />
+  edit: <MdOutlineEdit />,
+  json: <MdOutlineCode />,
+  'dataframe-converter': <MdOutlineDataObject />,
+  help: <MdOutlineHelp />,
+  nl2sql: <MdOutlineStorage />,
+  respondent: <MdOutlinePerson />,
+  tictactoe: <MdOutlineGrid3X3 />,
+  gomoku: <MdOutlineFilterNone />,
+  'ai-news': <MdOutlineNewspaper />
 }
 
 export type CustomIconsName = keyof typeof IconList
