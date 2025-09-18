@@ -29,7 +29,7 @@ function LeftSidebar() {
   }
 
   return (
-    <div className='md:w-[var(--sidebar-width)] w-full overflow-x-hidden h-full flex-col border-r bg-background-primary border-border'>
+    <div className='md:w-[var(--sidebar-width)] w-full overflow-x-visible h-full flex-col border-r bg-background-primary border-border'>
       <div className='flex flex-col h-full w-full md:right-[calc(100vw-var(--sidebar-width))]'>
         <div className='flex justify-center items-center h-[var(--topbar-height)]  border-b border-border'></div>
         <div className='flex flex-col flex-1 mt-4 justify-between'>

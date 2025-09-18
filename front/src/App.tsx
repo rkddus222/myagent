@@ -13,6 +13,7 @@ import HelpPage from '@pages/Llm/HelpPage'
 import DataFrameConverter from '@pages/DataFrame/DataFrameConverter'
 import TicTacToePage from '@pages/TicTacToePage'
 import GomokuPage from '@pages/Gomoku/GomokuPage'
+import AiNewsPage from '@pages/AiNews/AiNewsPage'
 
 const Layout = () => {
   const { isDarkMode } = useThemeStore()
@@ -45,6 +46,7 @@ const Layout = () => {
             <Route path='/dataframe-converter' element={<DataFrameConverter />} />
             <Route path='/tictactoe' element={<TicTacToePage />} />
             <Route path='/gomoku' element={<GomokuPage />} />
+            <Route path='/ai-news' element={<AiNewsPage />} />
             <Route path='*' element={<NotFound />} />
           </Routes>
         </div>
