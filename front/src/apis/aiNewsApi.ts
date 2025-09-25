@@ -16,49 +16,46 @@ export interface NewsResponse {
   status: string
 }
 
-// News API 응답 인터페이스
-interface NewsApiArticle {
-  source: {
-    id: string | null
-    name: string
+// RSS 피드 소스 설정
+const RSS_FEEDS = [
+  {
+    name: 'TechCrunch AI',
+    url: 'https://techcrunch.com/category/artificial-intelligence/feed/',
+    source: 'TechCrunch'
+  },
+  {
+    name: 'MIT Technology Review AI',
+    url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed/',
+    source: 'MIT Tech Review'
+  },
+  {
+    name: 'The Verge AI',
+    url: 'https://www.theverge.com/ai-artificial-intelligence/rss/index.xml',
+    source: 'The Verge'
+  },
+  {
+    name: 'AI News',
+    url: 'https://www.artificialintelligence-news.com/feed/',
+    source: 'AI News'
+  },
+  {
+    name: 'VentureBeat AI',
+    url: 'https://venturebeat.com/category/ai/feed/',
+    source: 'VentureBeat'
   }
-  author: string | null
+]
+
+// RSS 피드 파싱을 위한 인터페이스
+interface RSSItem {
   title: string
-  description: string | null
-  url: string
-  urlToImage: string | null
-  publishedAt: string
-  content: string | null
+  description: string
+  link: string
+  pubDate: string
+  source: string
 }
 
-interface NewsApiResponse {
-  status: string
-  totalResults: number
-  articles: NewsApiArticle[]
-}
-
-// News API 설정
-const NEWS_API_KEY = import.meta.env.VITE_NEWS_API_KEY
-const NEWS_API_BASE_URL = import.meta.env.VITE_NEWS_API_BASE_URL || 'https://newsapi.org/v2'
-
-// News API 인스턴스 생성
-const newsApiInstance = axios.create({
-  baseURL: NEWS_API_BASE_URL,
-  params: {
-    apiKey: NEWS_API_KEY
-  }
-})
-
-// News API 응답을 내부 포맷으로 변환하는 함수
-const transformNewsApiArticle = (article: NewsApiArticle): NewsItem => ({
-  id: `${article.url}-${article.publishedAt}`,
-  title: article.title,
-  description: article.description || '설명이 없습니다.',
-  url: article.url,
-  publishedAt: article.publishedAt,
-  source: article.source.name,
-  imageUrl: article.urlToImage || undefined
-})
+// RSS를 JSON으로 변환하는 서비스 (무료)
+const RSS_TO_JSON_API = 'https://api.rss2json.com/v1/api.json'
 
 // AI 관련 키워드 배열
 const AI_KEYWORDS = ['AI', 'artificial intelligence', 'LLM', 'GPT', 'ChatGPT', 'OpenAI', 'machine learning', 'deep learning']
@@ -112,152 +109,171 @@ const getDummyNews = (): NewsItem[] => [
   }
 ]
 
-// AI 뉴스를 가져오는 API 함수
-export const fetchAiNews = async (): Promise<NewsItem[]> => {
-  // API 키가 설정되지 않은 경우 더미 데이터 반환
-  if (!NEWS_API_KEY || NEWS_API_KEY === 'your_news_api_key_here') {
-    console.warn('News API 키가 설정되지 않았습니다. 더미 데이터를 사용합니다.')
-    return getDummyNews()
-  }
-
+// RSS 피드에서 뉴스를 가져오는 함수
+const fetchFromRSSFeed = async (feedUrl: string, source: string): Promise<NewsItem[]> => {
   try {
-    // AI 관련 키워드로 뉴스 검색
-    const searchQuery = AI_KEYWORDS.join(' OR ')
-
-    const response = await newsApiInstance.get<NewsApiResponse>('/everything', {
+    const response = await axios.get(RSS_TO_JSON_API, {
       params: {
-        q: searchQuery,
-        language: 'en',
-        sortBy: 'publishedAt',
-        pageSize: 20,
-        domains: 'techcrunch.com,arstechnica.com,theverge.com,wired.com,mit.edu,openai.com,deepmind.com'
+        rss_url: feedUrl,
+        api_key: 'public', // 무료 사용
+        count: 10
       }
     })
 
-    if (response.data.status === 'ok' && response.data.articles) {
-      const transformedArticles = response.data.articles
-        .filter(article => article.title && article.description && article.url)
-        .map(transformNewsApiArticle)
-        .slice(0, 10) // 최대 10개만 반환
-
-      return transformedArticles.length > 0 ? transformedArticles : getDummyNews()
+    if (response.data.status === 'ok' && response.data.items) {
+      return response.data.items.map((item: any, index: number): NewsItem => ({
+        id: `${source}-${Date.now()}-${index}`,
+        title: item.title || '제목 없음',
+        description: item.description?.replace(/<[^>]*>/g, '').substring(0, 200) + '...' || '설명이 없습니다.',
+        url: item.link || '#',
+        publishedAt: item.pubDate || new Date().toISOString(),
+        source: source,
+        imageUrl: item.thumbnail || item.enclosure?.link || undefined
+      }))
     }
-
-    return getDummyNews()
+    return []
   } catch (error) {
-    console.error('AI 뉴스를 가져오는 중 오류 발생:', error)
+    console.error(`${source} RSS 피드를 가져오는 중 오류:`, error)
+    return []
+  }
+}
 
-    // API 에러가 발생한 경우 더미 데이터 반환
+// 모든 RSS 피드에서 AI 뉴스를 가져오는 함수
+export const fetchAiNews = async (): Promise<NewsItem[]> => {
+  try {
+    // 여러 RSS 피드에서 병렬로 뉴스 가져오기
+    const feedPromises = RSS_FEEDS.map(feed =>
+      fetchFromRSSFeed(feed.url, feed.source)
+    )
+
+    const results = await Promise.allSettled(feedPromises)
+
+    // 성공한 결과들만 합치기
+    const allNews: NewsItem[] = []
+    results.forEach(result => {
+      if (result.status === 'fulfilled' && result.value) {
+        allNews.push(...result.value)
+      }
+    })
+
+    // 날짜순 정렬 (최신순)
+    allNews.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+
+    // 최대 15개 반환
+    const limitedNews = allNews.slice(0, 15)
+
+    // 뉴스가 없으면 더미 데이터 반환
+    return limitedNews.length > 0 ? limitedNews : getDummyNews()
+
+  } catch (error) {
+    console.error('RSS 피드에서 AI 뉴스를 가져오는 중 오류 발생:', error)
     return getDummyNews()
   }
 }
 
-// 특정 키워드로 AI 뉴스를 가져오는 함수
+// 특정 키워드로 AI 뉴스를 필터링하는 함수
 export const fetchAiNewsByKeyword = async (keyword: 'AI' | 'LLM' | 'GPT'): Promise<NewsItem[]> => {
-  if (!NEWS_API_KEY || NEWS_API_KEY === 'your_news_api_key_here') {
-    console.warn('News API 키가 설정되지 않았습니다. 더미 데이터를 사용합니다.')
+  try {
+    // 먼저 모든 뉴스를 가져온 다음 키워드로 필터링
+    const allNews = await fetchAiNews()
+
+    const keywordLower = keyword.toLowerCase()
+    const keywordMap = {
+      'ai': ['ai', 'artificial intelligence', 'machine learning', 'ml'],
+      'llm': ['llm', 'large language model', 'language model', 'transformer'],
+      'gpt': ['gpt', 'chatgpt', 'openai', 'generative']
+    }
+
+    const searchTerms = keywordMap[keywordLower] || [keywordLower]
+
+    const filteredNews = allNews.filter(item => {
+      const title = item.title.toLowerCase()
+      const description = item.description.toLowerCase()
+
+      return searchTerms.some(term =>
+        title.includes(term) || description.includes(term)
+      )
+    })
+
+    return filteredNews.length > 0 ? filteredNews : getDummyNews().filter(item =>
+      item.title.toLowerCase().includes(keywordLower) ||
+      item.description.toLowerCase().includes(keywordLower)
+    )
+  } catch (error) {
+    console.error(`${keyword} 뉴스를 필터링하는 중 오류 발생:`, error)
     return getDummyNews().filter(item =>
       item.title.toLowerCase().includes(keyword.toLowerCase()) ||
       item.description.toLowerCase().includes(keyword.toLowerCase())
     )
   }
-
-  try {
-    let searchQuery = ''
-
-    switch (keyword) {
-      case 'AI':
-        searchQuery = 'AI OR "artificial intelligence" OR "machine learning"'
-        break
-      case 'LLM':
-        searchQuery = 'LLM OR "large language model" OR "language model"'
-        break
-      case 'GPT':
-        searchQuery = 'GPT OR ChatGPT OR "OpenAI GPT"'
-        break
-    }
-
-    const response = await newsApiInstance.get<NewsApiResponse>('/everything', {
-      params: {
-        q: searchQuery,
-        language: 'en',
-        sortBy: 'publishedAt',
-        pageSize: 15,
-        domains: 'techcrunch.com,arstechnica.com,theverge.com,wired.com,mit.edu,openai.com,deepmind.com,venturebeat.com'
-      }
-    })
-
-    if (response.data.status === 'ok' && response.data.articles) {
-      const transformedArticles = response.data.articles
-        .filter(article => article.title && article.description && article.url)
-        .map(transformNewsApiArticle)
-        .slice(0, 10)
-
-      return transformedArticles.length > 0 ? transformedArticles : getDummyNews()
-    }
-
-    return getDummyNews()
-  } catch (error) {
-    console.error(`${keyword} 뉴스를 가져오는 중 오류 발생:`, error)
-    return getDummyNews()
-  }
 }
 
 // 뉴스 검색 함수 (사용자 정의 쿼리)
 export const searchAiNews = async (query: string): Promise<NewsItem[]> => {
-  if (!NEWS_API_KEY || NEWS_API_KEY === 'your_news_api_key_here') {
-    console.warn('News API 키가 설정되지 않았습니다. 더미 데이터를 사용합니다.')
+  try {
+    // 먼저 모든 뉴스를 가져온 다음 검색어로 필터링
+    const allNews = await fetchAiNews()
+
+    if (!query.trim()) {
+      return allNews
+    }
+
+    const queryLower = query.toLowerCase()
+    const searchTerms = queryLower.split(' ').filter(term => term.length > 0)
+
+    const filteredNews = allNews.filter(item => {
+      const title = item.title.toLowerCase()
+      const description = item.description.toLowerCase()
+      const source = item.source.toLowerCase()
+
+      return searchTerms.some(term =>
+        title.includes(term) ||
+        description.includes(term) ||
+        source.includes(term)
+      )
+    })
+
+    // 검색어와 더 관련성이 높은 순으로 정렬
+    const scoredNews = filteredNews.map(item => {
+      const title = item.title.toLowerCase()
+      const description = item.description.toLowerCase()
+
+      let score = 0
+      searchTerms.forEach(term => {
+        if (title.includes(term)) score += 3 // 제목에 있으면 높은 점수
+        if (description.includes(term)) score += 1 // 설명에 있으면 낮은 점수
+      })
+
+      return { ...item, score }
+    })
+
+    scoredNews.sort((a, b) => b.score - a.score)
+
+    return scoredNews.map(({ score, ...item }) => item)
+  } catch (error) {
+    console.error(`AI 뉴스 검색 중 오류 발생:`, error)
     return getDummyNews().filter(item =>
       item.title.toLowerCase().includes(query.toLowerCase()) ||
       item.description.toLowerCase().includes(query.toLowerCase())
     )
   }
-
-  try {
-    // AI 관련 검색어와 사용자 쿼리를 결합
-    const combinedQuery = `(AI OR "artificial intelligence" OR LLM OR GPT) AND (${query})`
-
-    const response = await newsApiInstance.get<NewsApiResponse>('/everything', {
-      params: {
-        q: combinedQuery,
-        language: 'en',
-        sortBy: 'relevancy',
-        pageSize: 15
-      }
-    })
-
-    if (response.data.status === 'ok' && response.data.articles) {
-      const transformedArticles = response.data.articles
-        .filter(article => article.title && article.description && article.url)
-        .map(transformNewsApiArticle)
-        .slice(0, 10)
-
-      return transformedArticles
-    }
-
-    return []
-  } catch (error) {
-    console.error(`AI 뉴스 검색 중 오류 발생:`, error)
-    return []
-  }
 }
 
-// API 상태 확인 함수
+// RSS API 상태 확인 함수
 export const checkApiStatus = async (): Promise<boolean> => {
-  if (!NEWS_API_KEY || NEWS_API_KEY === 'your_news_api_key_here') {
-    return false
-  }
-
   try {
-    const response = await newsApiInstance.get<NewsApiResponse>('/everything', {
+    // RSS2JSON API 테스트
+    const response = await axios.get(RSS_TO_JSON_API, {
       params: {
-        q: 'test',
-        pageSize: 1
-      }
+        rss_url: RSS_FEEDS[0].url, // 첫 번째 피드로 테스트
+        api_key: 'public',
+        count: 1
+      },
+      timeout: 10000 // 10초 타임아웃
     })
     return response.data.status === 'ok'
   } catch (error) {
-    console.error('News API 상태 확인 중 오류:', error)
+    console.error('RSS API 상태 확인 중 오류:', error)
     return false
   }
 }
