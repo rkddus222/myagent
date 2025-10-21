@@ -22,7 +22,8 @@ import {
   MdOutlineGrid3X3,
   MdOutlineFilterNone,
   MdOutlineNewspaper,
-  MdOutlinePsychology
+  MdOutlinePsychology,
+  MdOutlineScience
 } from 'react-icons/md'
 
 const IconList = {
@@ -48,7 +49,9 @@ const IconList = {
   respondent: <MdOutlinePerson />,
   tictactoe: <MdOutlineGrid3X3 />,
   gomoku: <MdOutlineFilterNone />,
-  'ai-news': <MdOutlineNewspaper />
+  'ai-news': <MdOutlineNewspaper />,
+  test: <MdOutlinePsychology />,
+  'test-page': <MdOutlineScience />
 }
 
 export type CustomIconsName = keyof typeof IconList

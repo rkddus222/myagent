@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { VegaEmbed } from 'react-vega';
+import type { VisualizationSpec } from 'vega-embed';
 
 // 기본 예제 스펙들
 const exampleSpecs = {
@@ -183,7 +184,7 @@ const exampleSpecs = {
 
 const TestPage: React.FC = () => {
   const [jsonInput, setJsonInput] = useState(JSON.stringify(exampleSpecs.barChart, null, 2));
-  const [spec, setSpec] = useState(exampleSpecs.barChart);
+  const [spec, setSpec] = useState<VisualizationSpec>(exampleSpecs.barChart as VisualizationSpec);
   const [error, setError] = useState<string | null>(null);
 
   const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -192,7 +193,7 @@ const TestPage: React.FC = () => {
     
     try {
       const parsed = JSON.parse(value);
-      setSpec(parsed);
+      setSpec(parsed as VisualizationSpec);
       setError(null);
     } catch (err) {
       setError('유효하지 않은 JSON 형식입니다.');
@@ -202,7 +203,7 @@ const TestPage: React.FC = () => {
   const loadExample = (exampleKey: keyof typeof exampleSpecs) => {
     const example = exampleSpecs[exampleKey];
     setJsonInput(JSON.stringify(example, null, 2));
-    setSpec(example);
+    setSpec(example as VisualizationSpec);
     setError(null);
   };
 
