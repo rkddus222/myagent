@@ -14,6 +14,7 @@ import DataFrameConverter from '@pages/DataFrame/DataFrameConverter'
 import TicTacToePage from '@pages/TicTacToePage'
 import GomokuPage from '@pages/Gomoku/GomokuPage'
 import AiNewsPage from '@pages/AiNews/AiNewsPage'
+import TestPage from '@pages/Test/TestPage'
 
 const Layout = () => {
   const { isDarkMode } = useThemeStore()
@@ -47,6 +48,7 @@ const Layout = () => {
             <Route path='/tictactoe' element={<TicTacToePage />} />
             <Route path='/gomoku' element={<GomokuPage />} />
             <Route path='/ai-news' element={<AiNewsPage />} />
+            <Route path='/test' element={<TestPage />} />
             <Route path='*' element={<NotFound />} />
           </Routes>
         </div>

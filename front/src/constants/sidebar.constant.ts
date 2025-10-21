@@ -64,6 +64,17 @@ const leftSideElements: leftSideElementProps[] = [
         to: '/ai-news'
       }
     ]
+  },
+  {
+    name: 'test',
+    title: '테스트',
+    children: [
+      {
+        name: 'test-page',
+        title: '테스트 페이지',
+        to: '/test'
+      }
+    ]
   }
 ]
 

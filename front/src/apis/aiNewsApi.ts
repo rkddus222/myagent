@@ -178,7 +178,7 @@ export const fetchAiNewsByKeyword = async (keyword: 'AI' | 'LLM' | 'GPT'): Promi
     const allNews = await fetchAiNews()
 
     const keywordLower = keyword.toLowerCase()
-    const keywordMap = {
+    const keywordMap: { [key: string]: string[] } = {
       'ai': ['ai', 'artificial intelligence', 'machine learning', 'ml'],
       'llm': ['llm', 'large language model', 'language model', 'transformer'],
       'gpt': ['gpt', 'chatgpt', 'openai', 'generative']
@@ -190,7 +190,7 @@ export const fetchAiNewsByKeyword = async (keyword: 'AI' | 'LLM' | 'GPT'): Promi
       const title = item.title.toLowerCase()
       const description = item.description.toLowerCase()
 
-      return searchTerms.some(term =>
+      return searchTerms.some((term: string) =>
         title.includes(term) || description.includes(term)
       )
     })
@@ -239,7 +239,7 @@ export const searchAiNews = async (query: string): Promise<NewsItem[]> => {
       const description = item.description.toLowerCase()
 
       let score = 0
-      searchTerms.forEach(term => {
+      searchTerms.forEach((term: string) => {
         if (title.includes(term)) score += 3 // 제목에 있으면 높은 점수
         if (description.includes(term)) score += 1 // 설명에 있으면 낮은 점수
       })
