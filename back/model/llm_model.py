@@ -20,3 +20,7 @@ class EvaluateRequest(BaseModel):
     question1: str
     question2: str
     user_question: str = Field(default="")
+
+class FinancialAnalysisRequest(BaseModel):
+    target_companies: List[str]
+    company_id: str = "default"

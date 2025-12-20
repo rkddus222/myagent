@@ -10,6 +10,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.llm_api import llm_api
+from api.financial_api import financial_api
 from utils.logger import setup_logger
 from utils.config import Config
 
@@ -52,6 +53,8 @@ app.add_middleware(
 
 # API 라우터 등록
 app.include_router(llm_api, prefix="/api/llm")
+
+app.include_router(financial_api, prefix="/api/financial")
 
 @app.get("/")
 async def root():

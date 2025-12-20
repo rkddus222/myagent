@@ -70,9 +70,9 @@ const leftSideElements: leftSideElementProps[] = [
     title: '테스트',
     children: [
       {
-        name: 'test-page',
-        title: '테스트 페이지',
-        to: '/test'
+        name: 'dashboard',
+        title: '주식 분석',
+        to: '/financial-analysis'
       }
     ]
   }
