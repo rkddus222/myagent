@@ -1,0 +1,56 @@
+# Python
+back/venv/
+**/venv/
+**/.venv/
+**/env/
+**/ENV/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist/
+build/
+*.whl
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node
+front/node_modules/
+front/dist/
+**/node_modules/
+**/.next/
+**/.cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+back/logs/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Selenium (크기가 큰 의존성)
+# selenium과 webdriver-manager는 필요시에만 포함
+
+# 기타
+*.tsbuildinfo
+front/tsconfig.*.tsbuildinfo
+

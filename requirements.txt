@@ -10,8 +10,8 @@ mangum==0.18.0
 
 # 웹 스크래핑
 beautifulsoup4==4.12.3
-selenium==4.33.0
-webdriver-manager==4.0.2
+# selenium==4.33.0  # 사용하지 않음, 크기가 커서 제외
+# webdriver-manager==4.0.2  # 사용하지 않음, 크기가 커서 제외
 
 # LangChain 및 AI 모델
 langchain==0.3.26
