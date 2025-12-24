@@ -1,29 +1,17 @@
-# Vercel 배포용 requirements.txt (back/requirements.txt와 동일)
+# Vercel 배포용 최소 requirements.txt
 # 핵심 의존성
 python-dotenv==1.0.1
 requests==2.31.0
 
 # 웹 프레임워크
 fastapi==0.115.0
-uvicorn[standard]==0.32.0
 mangum==0.18.0
 
-# 웹 스크래핑
-beautifulsoup4==4.12.3
-# selenium==4.33.0  # 사용하지 않음, 크기가 커서 제외
-# webdriver-manager==4.0.2  # 사용하지 않음, 크기가 커서 제외
-
-# LangChain 및 AI 모델
-langchain==0.3.26
+# LangChain (최소한만)
 langchain-core==0.3.66
 langchain-openai==0.3.25
 langchain-google-genai==2.0.10
 langchain-perplexity==0.1.1
-langgraph==0.4.8
-langgraph-checkpoint==2.1.0
-langgraph-prebuilt==0.2.2
-langgraph-sdk==0.1.70
-langsmith==0.4.1
 
 # AI 모델 API 클라이언트
 openai==1.88.0
@@ -35,11 +23,7 @@ pydantic==2.11.7
 pydantic-core==2.33.2
 pydantic-settings==2.6.1
 
-# 데이터 처리
-pandas==2.2.1
-numpy==1.26.4
-
-# 금융 데이터
+# 금융 데이터 (yfinance가 pandas/numpy를 자동으로 설치)
 yfinance==0.2.49
 
 # 검색 엔진
@@ -47,5 +31,12 @@ duckduckgo-search==8.1.1
 
 # 유틸리티
 tiktoken==0.9.0
-websocket-client==1.8.0
 
+# 제거된 의존성 (크기가 크거나 사용하지 않음):
+# - uvicorn[standard] (서버리스에서는 불필요)
+# - langchain (langchain-core로 충분)
+# - langgraph, langgraph-*, langsmith (사용하지 않음)
+# - pandas, numpy (yfinance가 자동 설치)
+# - beautifulsoup4 (사용하지 않음)
+# - selenium, webdriver-manager (사용하지 않음)
+# - websocket-client (사용하지 않음)
