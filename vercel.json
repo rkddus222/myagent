@@ -5,15 +5,10 @@
   "installCommand": "cd front && npm install",
   "devCommand": "cd front && npm run dev",
   "framework": "vite",
-  "functions": {
-    "api/index.py": {
-      "runtime": "python3.9"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index"
+      "destination": "/api/index.py"
     },
     {
       "source": "/(.*)",
