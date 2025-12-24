@@ -67,7 +67,7 @@ const leftSideElements: leftSideElementProps[] = [
   },
   {
     name: 'test',
-    title: '테스트',
+    title: '주식 분석',
     children: [
       {
         name: 'dashboard',

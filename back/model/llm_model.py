@@ -22,5 +22,5 @@ class EvaluateRequest(BaseModel):
     user_question: str = Field(default="")
 
 class FinancialAnalysisRequest(BaseModel):
-    target_companies: List[str]
-    company_id: str = "default"
+    """종합 분석 요청 모델"""
+    target_companies: List[str] = Field(..., description="분석할 종목 리스트", min_length=1)
