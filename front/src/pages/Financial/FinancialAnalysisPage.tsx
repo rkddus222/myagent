@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '@/apis/axiosInstance';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -47,7 +47,7 @@ const FinancialAnalysisPage: React.FC<FinancialAnalysisPageProps> = () => {
         setAnalysisResult('');
 
         try {
-            const response = await axios.post('http://localhost:8081/api/financial/analyze', {
+            const response = await axiosInstance.post('/api/financial/analyze', {
                 target_companies: targetCompanies
             });
             setAnalysisResult(response.data.answer);
