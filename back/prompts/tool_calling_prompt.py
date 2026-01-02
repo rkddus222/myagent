@@ -16,13 +16,14 @@ def tool_calling_prompt(target_companies, tool_history):
     Request
     {{ "tool": "getStockInfo", "arguments": {{ "ticker": "(string) 종목 코드 (예: 005930)" }} }}
     * 주의: 정확한 종목 코드를 모를 경우 종목명으로 시도할 수 있으나, 가급적 코드를 확보하여 호출하십시오.
-
+    
     Response
     {{ "ticker": "(string) 종목코드", "name": "(string) 종목명", "current_price": "(number) 현재가", "change_rate": "(number) 등락률(%)", "market_cap": "(string/N/A) 시가총액", "per": "(number/N/A) PER", "previous_close": "(number) 전일종가", "currency": "(string) 통화" }}
 
     ## Tool 2. 경제 뉴스 수집 (getEconomicNews)
     Request
     {{ "tool": "getEconomicNews", "arguments": {{ "query": "(string) 검색어 (예: 삼성전자 실적)", "count": "(number) 수집할 뉴스 개수 (기본 3개)" }} }}
+    * 주의: 뉴스 검색 결과가 없거나 실패하더라도 동일한 검색어로 재시도하지 마십시오. 즉시 확보된 데이터로 리포트를 생성하십시오.
 
     Response
     {{ "news_list": [ {{ "title": "(string) 뉴스 제목", "summary": "(string) 뉴스 요약", "source": "(string) 언론사" }} ] }}

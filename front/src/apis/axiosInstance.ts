@@ -5,20 +5,20 @@ const getBaseURL = () => {
   if (import.meta.env.PROD) {
     return ''
   }
-  
+
   // 개발 환경에서는 환경 변수 또는 localhost 사용
   const envUrl = import.meta.env.VITE_API_URL
-  
+
   if (!envUrl) {
     return 'http://localhost:8081'
   }
-  
+
   return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl
 }
 
 const axiosInstance = axios.create({
   baseURL: getBaseURL(),
-  timeout: 10000,
+  timeout: 90000,
   headers: {
     'Content-Type': 'application/json'
   }

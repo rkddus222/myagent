@@ -57,6 +57,9 @@ class StockDataTool:
                                 "currency": currency
                             }
                             break # 성공하면 루프 종료
+                except requests.exceptions.Timeout:
+                    error_msg = "Timeout occurred"
+                    continue
                 except Exception as req_e:
                     error_msg = str(req_e)
                     continue
@@ -93,7 +96,8 @@ class NewsCollectorTool:
                     })
             return results
         except Exception as e:
-            return [{"error": f"뉴스 조회 실패: {str(e)}"}]
+            # 뉴스를 못 가져와도 분석은 진행되도록 빈 리스트 반환
+            return []
 
 class AnalysisReportTool:
     def format_for_llm(self, stock_data: Dict, news_data: List[Dict]) -> str:

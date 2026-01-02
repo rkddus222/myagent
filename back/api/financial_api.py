@@ -46,8 +46,14 @@ async def analyze_finance(request: FinancialAnalysisRequest) -> Dict[str, Any]:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"종합 분석 실패: {str(e)}", exc_info=True)
+        import traceback
+        error_trace = traceback.format_exc()
+        logger.error(f"종합 분석 실패: {str(e)}\n{error_trace}")
         raise HTTPException(
             status_code=500, 
-            detail=f"분석 중 오류가 발생했습니다: {str(e)}"
+            detail={
+                "message": "분석 중 오류가 발생했습니다.",
+                "error": str(e),
+                "traceback": error_trace
+            }
         )

@@ -43,7 +43,7 @@
     "react-syntax-highlighter": "^15.6.1",
     "react-toastify": "^11.0.2",
     "react-vega": "^8.0.0",
-    "remark-gfm": "^4.0.1",
+    "remark-gfm": "^3.0.1",
     "shadcn-ui": "^0.9.4",
     "vega": "^6.2.0",
     "vega-embed": "^7.1.0",
