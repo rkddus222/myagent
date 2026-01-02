@@ -28,3 +28,4 @@ duckduckgo-search==8.1.1
 # 유틸리티
 tiktoken==0.9.0
 psycopg2-binary
+beautifulsoup4
