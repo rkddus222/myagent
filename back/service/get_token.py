@@ -1,15 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-한국투자증권 API 토큰 발급 도구
-1분 제한을 우회하기 위해 별도로 토큰을 발급받아 사용
-"""
 import os
-import sys
 import requests
 import json
+import psycopg2
 from datetime import datetime, timedelta
-from dotenv import load_dotenv, set_key
+from dotenv import load_dotenv
 from pathlib import Path
 
 from core.config import settings
@@ -20,84 +14,125 @@ env_file_path = project_root / '.env'
 
 load_dotenv(env_file_path)
 
-# 토큰 캐시 변수
+# 토큰 캐시 변수 (메모리 내 캐싱)
 _cached_token = None
 
-def save_token_to_env(token_info: dict):
-    """
-    토큰 정보를 .env 파일에 저장합니다.
-    """
+def get_db_connection():
+    """DB 연결을 생성합니다."""
+    db_url = os.getenv("DATABASE_URL")
+    if not db_url:
+        print("❌ DATABASE_URL 설정이 없습니다.")
+        return None
     try:
-        # .env 파일에 토큰 정보 저장 (절대 경로 사용)
-        set_key(env_file_path, 'KOR_INVESTMENT_ACCESS_TOKEN', token_info['access_token'])
-        set_key(env_file_path, 'KOR_INVESTMENT_TOKEN_EXPIRES_AT', token_info['expires_at'])
-        set_key(env_file_path, 'KOR_INVESTMENT_TOKEN_TYPE', token_info['token_type'])
+        conn = psycopg2.connect(db_url)
+        return conn
+    except Exception as e:
+        print(f"❌ DB 연결 오류: {e}")
+        return None
+
+def save_token_to_db(token_info: dict):
+    """
+    토큰 정보를 Supabase DB에 저장합니다.
+    """
+    conn = get_db_connection()
+    if not conn:
+        return False
         
-        print(f"✅ 토큰 정보가 {env_file_path} 파일에 저장되었습니다.")
+    try:
+        cur = conn.cursor()
+        # UPSERT (저장 또는 업데이트)
+        cur.execute("""
+            INSERT INTO tokens (token_key, access_token, expires_at, updated_at)
+            VALUES (%s, %s, %s, CURRENT_TIMESTAMP)
+            ON CONFLICT (token_key) 
+            DO UPDATE SET 
+                access_token = EXCLUDED.access_token,
+                expires_at = EXCLUDED.expires_at,
+                updated_at = CURRENT_TIMESTAMP;
+        """, (
+            'KOR_INVESTMENT_API', 
+            token_info['access_token'], 
+            token_info['expires_at']
+        ))
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("✅ 토큰 정보가 DB에 저장되었습니다.")
         return True
     except Exception as e:
-        print(f"❌ 토큰 저장 중 오류: {e}")
+        print(f"❌ 토큰 저장 중 DB 오류: {e}")
+        if conn: conn.close()
         return False
 
-def is_token_expired() -> bool:
+def is_token_expired(expires_at_str: str) -> bool:
     """
-    저장된 토큰의 만료 시간을 확인합니다.
+    토큰의 만료 시간을 확인합니다.
     """
-    expires_at_str = os.getenv("KOR_INVESTMENT_TOKEN_EXPIRES_AT")
     if not expires_at_str:
         return True
     
     try:
-        expires_at = datetime.fromisoformat(expires_at_str)
+        # ISO 포맷 또는 DB 저장 포맷 파싱
+        expires_at = datetime.fromisoformat(expires_at_str.replace('Z', '+00:00'))
         # 10분 여유를 두고 만료 체크
-        return datetime.now() >= (expires_at - timedelta(minutes=10))
+        return datetime.now(expires_at.tzinfo) >= (expires_at - timedelta(minutes=10))
     except Exception as e:
         print(f"토큰 만료 시간 파싱 오류: {e}")
         return True
 
-def get_saved_token() -> dict:
+def get_token_from_db() -> dict:
     """
-    저장된 토큰 정보를 반환합니다.
+    DB에서 저장된 토큰 정보를 가져옵니다.
     """
-    access_token = os.getenv("KOR_INVESTMENT_ACCESS_TOKEN")
-    expires_at = os.getenv("KOR_INVESTMENT_TOKEN_EXPIRES_AT")
-    token_type = os.getenv("KOR_INVESTMENT_TOKEN_TYPE", "Bearer")
-    
-    if access_token and expires_at:
-        return {
-            "access_token": access_token,
-            "expires_at": expires_at,
-            "token_type": token_type,
-            "base_url": "https://openapi.koreainvestment.com:9443",
-            "is_production": True
-        }
+    conn = get_db_connection()
+    if not conn:
+        return None
+        
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT access_token, expires_at FROM tokens WHERE token_key = %s", ('KOR_INVESTMENT_API',))
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        
+        if row:
+            access_token, expires_at = row
+            # expires_at을 문자열(ISO)로 변환하거나 객체로 유지
+            return {
+                "access_token": access_token,
+                "expires_at": expires_at.isoformat() if hasattr(expires_at, 'isoformat') else str(expires_at),
+                "token_type": "Bearer",
+                "base_url": "https://openapi.koreainvestment.com:9443",
+                "is_production": True
+            }
+    except Exception as e:
+        print(f"❌ DB 토큰 조회 중 오류: {e}")
+        if conn: conn.close()
+        
     return None
 
 def clear_token_cache():
-    """토큰 캐시를 초기화합니다."""
+    """토큰의 메모리 캐시를 초기화합니다."""
     global _cached_token
     _cached_token = None
 
 def get_access_token() -> dict:
     """
     한국투자증권 API 액세스 토큰을 발급받습니다.
-    저장된 토큰이 있고 만료되지 않았다면 그것을 사용하고,
-    만료되었다면 새로 발급받아 저장합니다.
-
-    Returns:
-        토큰 정보 딕셔너리
+    DB에 저장된 토큰이 있고 만료되지 않았다면 그것을 사용하고,
+    만료되었다면 새로 발급받아 DB에 저장합니다.
     """
     global _cached_token
     
-    # 캐시된 토큰이 있고 만료되지 않았다면 재사용
-    if _cached_token and not is_token_expired():
-        print("✅ 캐시된 토큰을 사용합니다.")
+    # 1. 메모리 캐시 확인
+    if _cached_token and not is_token_expired(_cached_token['expires_at']):
+        print("✅ 메모리 캐시된 토큰을 사용합니다.")
         return _cached_token
     
-    # 저장된 토큰이 있고 만료되지 않았다면 그것을 사용
-    saved_token = get_saved_token()
-    if saved_token and not is_token_expired():
-        print("✅ 저장된 토큰을 사용합니다.")
+    # 2. DB 저장 토큰 확인
+    saved_token = get_token_from_db()
+    if saved_token and not is_token_expired(saved_token['expires_at']):
+        print("✅ DB에 저장된 토큰을 사용합니다.")
         _cached_token = saved_token
         return saved_token
     
@@ -112,10 +147,7 @@ def get_access_token() -> dict:
 
     base_url = "https://openapi.koreainvestment.com:9443"
     url = f"{base_url}/oauth2/tokenP"
-    headers = {
-        "Content-Type": "application/json"
-    }
-
+    headers = {"Content-Type": "application/json"}
     data = {
         "grant_type": "client_credentials",
         "appkey": app_key,
@@ -123,57 +155,38 @@ def get_access_token() -> dict:
     }
 
     try:
-        print(f"토큰 발급 요청 중...")
-
-        response = requests.post(url, headers=headers, data=json.dumps(data))
+        response = requests.post(url, headers=headers, json=data)
 
         if response.status_code == 200:
             result = response.json()
-
             # 만료시간 계산 (23시간 후로 설정)
+            # 한투 토큰은 24시간 유효하지만 안전하게 23시간으로 설정
             expires_at = datetime.now() + timedelta(hours=23)
 
             token_info = {
                 "access_token": result["access_token"],
                 "expires_at": expires_at.isoformat(),
                 "token_type": result.get("token_type", "Bearer"),
-                "expires_in": result.get("expires_in", 86400),
                 "base_url": base_url,
                 "is_production": True
             }
 
-            # 토큰을 .env 파일에 저장
-            if save_token_to_env(token_info):
-                print("✅ 토큰 발급 및 저장 성공!")
-                print(f"만료시간: {expires_at.strftime('%Y-%m-%d %H:%M:%S')}")
-                # 캐시에 저장
-                _cached_token = token_info
-                return token_info
-            else:
-                print("⚠️ 토큰 발급은 성공했지만 저장에 실패했습니다.")
-                # 캐시에 저장
-                _cached_token = token_info
-                return token_info
-
+            # 토큰을 DB에 저장
+            save_token_to_db(token_info)
+            _cached_token = token_info
+            return token_info
         else:
-            print(f"❌ 토큰 발급 실패: {response.status_code}")
-            print(f"응답: {response.text}")
+            print(f"❌ 토큰 발급 실패: {response.status_code}, {response.text}")
             return None
 
     except Exception as e:
-        print(f"❌ 토큰 발급 중 오류: {e}")
+        print(f"❌ 토큰 발급 프로세스 중 오류: {e}")
         return None
 
-
 if __name__ == "__main__":
-    print("=== 한국투자증권 API 토큰 발급 도구 ===\n")
-
-    # 토큰 발급
+    print("=== 한국투자증권 API 토큰 발급 도구 (Supabase 캐시) ===\n")
     token_info = get_access_token()
-
     if token_info:
-        print("\n✅ 토큰 준비 완료!")
-        print(f"토큰: {token_info['access_token']}")
-        print(f"만료시간: {token_info['expires_at']}")
+        print(f"✅ 토큰 준비 완료! ({token_info['expires_at']} 까지 유효)")
     else:
         print("❌ 토큰 발급에 실패했습니다.")

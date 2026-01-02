@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     KOR_INVESTMENT_APP_KEY: str = Field(default="")
     KOR_INVESTMENT_APP_SECRET: str = Field(default="")
+    DATABASE_URL: str = Field(default="")
 
     # .env 파일 로드를 위한 설정 (필요시)
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
