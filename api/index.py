@@ -9,7 +9,5 @@ parent_dir = os.path.dirname(current_dir) # 루트 디렉토리
 sys.path.append(parent_dir)
 
 from back.main import app # 실제 백엔드 앱 임포트
-from mangum import Mangum
 
-# Vercel Serverless Function 진입점
-handler = Mangum(app)
+# Vercel은 'app' 객체를 자동으로 감지하여 Serverless Function으로 배포합니다.
