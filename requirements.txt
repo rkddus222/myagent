@@ -23,8 +23,8 @@ pydantic==2.11.7
 pydantic-core==2.33.2
 pydantic-settings==2.6.1
 
-# 금융 데이터 (yfinance가 pandas/numpy를 자동으로 설치)
-yfinance==0.2.49
+# 금융 데이터
+# yfinance 제거 (requests로 대체)
 
 # 검색 엔진
 duckduckgo-search==8.1.1
@@ -32,11 +32,3 @@ duckduckgo-search==8.1.1
 # 유틸리티
 tiktoken==0.9.0
 
-# 제거된 의존성 (크기가 크거나 사용하지 않음):
-# - uvicorn[standard] (서버리스에서는 불필요)
-# - langchain (langchain-core로 충분)
-# - langgraph, langgraph-*, langsmith (사용하지 않음)
-# - pandas, numpy (yfinance가 자동 설치)
-# - beautifulsoup4 (사용하지 않음)
-# - selenium, webdriver-manager (사용하지 않음)
-# - websocket-client (사용하지 않음)
