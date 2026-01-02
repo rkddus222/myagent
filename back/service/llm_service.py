@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import SystemMessage
 
-from utils.chatgpt import gpt_4o_mini as llm
+from utils.chatgpt import get_chat_model
 from utils.logger import setup_logger
 
 logger = setup_logger('llm_service')
@@ -80,6 +80,7 @@ def extract_sql_from_response(result: str) -> str:
 
 def nl2sql(company_id: str, user_question: str, table_name: str) -> str:
     try:
+        llm = get_chat_model()
         today = datetime.now().strftime("%Y-%m-%d")
         system_prompt = read_prompt_file("prompts_nl2sql", company_id, table_name)
         partial_prompt = system_prompt.format(user_question=user_question, today=today)
@@ -103,6 +104,7 @@ def nl2sql(company_id: str, user_question: str, table_name: str) -> str:
 
 def respondent(company_id: str, user_question: str, sql_query: str) -> str:
     try:
+        llm = get_chat_model()
         print(f"user_question: {user_question}")
         print(f"sql_query: {sql_query}")
         system_prompt = read_prompt_file("prompts_respondent", company_id, sql_query)
@@ -128,6 +130,7 @@ def respondent(company_id: str, user_question: str, sql_query: str) -> str:
 
 def help(prompt: str, user_question: str) -> str:
     try:
+        llm = get_chat_model()
         prompt = ChatPromptTemplate.from_messages([
             SystemMessage(content=prompt),
             ("user", user_question)
@@ -148,6 +151,7 @@ def help(prompt: str, user_question: str) -> str:
 
 def evaluate(prompt: str, question1: str, question2: str) -> str:
     try:
+        llm = get_chat_model()
         user_question = f"질문1: {question1}\n질문2: {question2}"
         prompt = ChatPromptTemplate.from_messages([
             SystemMessage(content=prompt),

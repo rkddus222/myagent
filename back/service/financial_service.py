@@ -2,7 +2,7 @@ import json
 import re
 from typing import Dict, Any, List
 from langchain_core.messages import SystemMessage
-from utils.chatgpt import gpt_4o_mini as llm
+from utils.chatgpt import get_chat_model
 from service.api_scraper import get_stock_current_price, is_domestic_stock
 from service.get_stock import load_stock_list
 from service.news_scraper_simple import scrape_naver_news_simple, scrape_yahoo_news_simple
@@ -227,6 +227,8 @@ def analyze_financial_query(target_companies: List[Any]) -> str:
     tool_history = ""
     max_steps = 5
     
+    llm = get_chat_model()  # Lazy Loading
+
     for step in range(max_steps):
         # 1. 프롬프트 생성 (리스트 대신 포맷팅된 문자열 전달)
         prompt = tool_calling_prompt(targets_str, tool_history)
