@@ -116,6 +116,27 @@ def clear_token_cache():
     global _cached_token
     _cached_token = None
 
+def get_api_key_from_db(key_name: str) -> str:
+    """DB에서 API 키를 조회합니다."""
+    conn = get_db_connection()
+    if not conn:
+        return None
+    
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT key_value FROM api_keys WHERE key_name = %s", (key_name,))
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        
+        if row:
+            return row[0]
+    except Exception as e:
+        print(f"❌ DB API 키 조회 중 오류 ({key_name}): {e}")
+        if conn: conn.close()
+    
+    return None
+
 def get_access_token() -> dict:
     """
     한국투자증권 API 액세스 토큰을 발급받습니다.
@@ -138,12 +159,21 @@ def get_access_token() -> dict:
     
     print("🔄 토큰이 만료되었거나 없습니다. 새로 발급받습니다...")
 
-    # 환경변수에서 직접 API 키 가져오기
+    # 3. API 키 가져오기 (환경변수 우선 -> DB 조회)
     app_key = os.getenv("KOR_INVESTMENT_APP_KEY")
     app_secret = os.getenv("KOR_INVESTMENT_APP_SECRET")
 
+    # 환경변수에 없으면 DB에서 조회
+    if not app_key:
+        print("ℹ️ 환경 변수에서 APP_KEY를 찾을 수 없어 DB를 조회합니다.")
+        app_key = get_api_key_from_db("KOR_INVESTMENT_APP_KEY")
+        
+    if not app_secret:
+        print("ℹ️ 환경 변수에서 APP_SECRET을 찾을 수 없어 DB를 조회합니다.")
+        app_secret = get_api_key_from_db("KOR_INVESTMENT_APP_SECRET")
+
     if not app_key or not app_secret:
-        raise ValueError("API 키가 설정되지 않았습니다. .env 파일에서 KOR_INVESTMENT_APP_KEY와 KOR_INVESTMENT_APP_SECRET을 설정해주세요.")
+        raise ValueError("API 키가 설정되지 않았습니다. 환경 변수 또는 DB(api_keys 테이블)에서 KOR_INVESTMENT_APP_KEY와 KOR_INVESTMENT_APP_SECRET을 설정해주세요.")
 
     base_url = "https://openapi.koreainvestment.com:9443"
     url = f"{base_url}/oauth2/tokenP"
