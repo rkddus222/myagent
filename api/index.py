@@ -1,29 +1,23 @@
-import sys
-import os
-import json
+from fastapi import FastAPI
+from mangum import Mangum
+from pydantic import BaseModel
 
-try:
-    # back 폴더를 Python 경로에 추가
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'back'))
-    # 루트 폴더도 추가 (back 모듈을 찾기 위해)
-    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+app = FastAPI()
 
-    from mangum import Mangum
-    from back.main import app
+class StockRequest(BaseModel):
+    query: str = "test"
 
-    # Mangum으로 FastAPI 앱을 래핑하여 Vercel Serverless Functions에서 사용
-    handler = Mangum(app, lifespan="off")
+@app.get("/api/health")
+def health_check():
+    return {"status": "ok", "message": "Vercel Minimal Deployment Success!"}
 
-except Exception as e:
-    import traceback
-    error_msg = f"Bootstrap Error: {str(e)}\n{traceback.format_exc()}"
-    print(error_msg)
-    
-    # 에러 발생 시 임시 핸들러 반환
-    def handler(event, context):
-        return {
-            "statusCode": 500,
-            "headers": {"Content-Type": "application/json"},
-            "body": json.dumps({"error": error_msg})
-        }
+@app.post("/api/financial/analyze")
+def analyze_dummy(request: dict):
+    return {
+        "status": "success",
+        "message": "This is a dummy response from minimal API.",
+        "data": "If you see this, Vercel deployment is WORKING correctly. The issue is in 'back' module."
+    }
 
+# Mangum Handler
+handler = Mangum(app, lifespan="off")
