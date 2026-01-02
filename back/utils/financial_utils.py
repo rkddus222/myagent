@@ -41,14 +41,16 @@ class StockDataTool:
                             previous_close = meta.get('chartPreviousClose')
                             symbol = meta.get('symbol')
                             
-                            # 시가총액 등 추가 정보는 quoteSummary API에서 가져올 수 있으나, 
-                            # 최소한의 정보로 chart API만 사용하거나 필요시 추가 호출
-                            # 여기서는 chart API의 meta 데이터만으로 구성
+                            # 등락률 계산
+                            change_rate = "N/A"
+                            if current_price is not None and previous_close is not None and previous_close != 0:
+                                change_rate = round(((current_price - previous_close) / previous_close) * 100, 2)
                             
                             data = {
                                 "ticker": symbol,
                                 "name": symbol, # API에서 이름을 바로 주지 않을 수 있음
                                 "current_price": current_price,
+                                "change_rate": change_rate,
                                 "market_cap": "N/A", # chart API에는 없음, 필요시 quote API 사용 고려
                                 "per": "N/A",
                                 "previous_close": previous_close,

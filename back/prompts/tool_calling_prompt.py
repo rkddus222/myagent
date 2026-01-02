@@ -18,7 +18,7 @@ def tool_calling_prompt(target_companies, tool_history):
     * 주의: 정확한 종목 코드를 모를 경우 종목명으로 시도할 수 있으나, 가급적 코드를 확보하여 호출하십시오.
 
     Response
-    {{ "current_price": "(number) 현재가", "change_rate": "(number) 등락률", "market_cap": "(string) 시가총액", "per": "(number) PER", "pbr": "(number) PBR" }}
+    {{ "ticker": "(string) 종목코드", "name": "(string) 종목명", "current_price": "(number) 현재가", "change_rate": "(number) 등락률(%)", "market_cap": "(string/N/A) 시가총액", "per": "(number/N/A) PER", "previous_close": "(number) 전일종가", "currency": "(string) 통화" }}
 
     ## Tool 2. 경제 뉴스 수집 (getEconomicNews)
     Request
