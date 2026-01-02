@@ -1,9 +1,8 @@
 from langchain_core.messages import SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
 
-def tool_calling_prompt(target_companies, tool_history):
-    # target_companies is a list of strings. Join them for the prompt.
-    targets_str = ", ".join(target_companies)
+def tool_calling_prompt(targets_str, tool_history):
+    # targets_str is now passed directly from analyze_financial_query
 
     base_prompt = """
     <system_prompt> 당신은 사용자의 투자 의사결정을 돕는 전문 주식 분석 에이전트입니다. 
@@ -22,15 +21,15 @@ def tool_calling_prompt(target_companies, tool_history):
 
     ## Tool 2. 경제 뉴스 수집 (getEconomicNews)
     Request
-    {{ "tool": "getEconomicNews", "arguments": {{ "query": "(string) 검색어 (예: 삼성전자 실적)", "count": "(number) 수집할 뉴스 개수 (기본 3개)" }} }}
-    * 주의: 뉴스 검색 결과가 없거나 실패하더라도 동일한 검색어로 재시도하지 마십시오. 즉시 확보된 데이터로 리포트를 생성하십시오.
-
+    {{ "tool": "getEconomicNews", "arguments": {{ "ticker": "(string) 종목 코드 (예: 005930)", "keyword": "(string) 추가 검색 키워드 (예: 실적)", "count": "(number) 수집할 뉴스 개수 (기본 3개)" }} }}
+    * 주의: News collector uses the 'ticker' for search. Ensure you pass the correct stock code if available.
+    
     Response
     {{ "news_list": [ {{ "title": "(string) 뉴스 제목", "summary": "(string) 뉴스 요약", "source": "(string) 언론사" }} ] }}
 
     ## Tool 3. 데이터 통합 분석 결과 제공 (generateAnalysisReport)
     Request
-    {{ "tool": "generateAnalysisReport", "arguments": {{ "stock_info": "(object) Tool 1에서 수집된 시세 데이터", "news_data": "(array) Tool 2에서 수집된 뉴스 데이터", "user_intent": "(string) 사용자의 구체적인 질문 의도 (예: {targets_str} 종합 분석)" }} }}
+    {{ "tool": "generateAnalysisReport", "arguments": {{ "stock_info": "(object) Tool 1에서 수집된 시세 데이터", "news_data": "(array) Tool 2에서 수집된 뉴스 데이터", "user_intent": "(string) 사용자의 구체적인 질문 의도 (예: 종합 분석)" }} }}
 
     Response
     {{ "report": "(string) 수치와 뉴스를 결합한 최종 분석 리포트 내용" }} </tool_list>

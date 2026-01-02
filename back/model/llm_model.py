@@ -23,4 +23,4 @@ class EvaluateRequest(BaseModel):
 
 class FinancialAnalysisRequest(BaseModel):
     """종합 분석 요청 모델"""
-    target_companies: List[str] = Field(..., description="분석할 종목 리스트", min_length=1)
+    target_companies: List[Any] = Field(..., description="분석할 종목 리스트 (문자열 또는 {'name': '삼성전자', 'code': '005930'} 형식)", min_length=1)
