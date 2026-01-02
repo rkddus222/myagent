@@ -77,7 +77,10 @@ class NewsCollectorTool:
     def search_news(self, query: str, count: int = 5) -> List[Dict[str, str]]:
         """
         DuckDuckGo를 사용하여 검색어와 관련된 최신 뉴스를 검색합니다.
+        WARNING: Vercel 타임아웃 회피를 위해 임시 비활성화됨.
         """
+        return []
+
         try:
             from duckduckgo_search import DDGS  # Lazy import
             results = []
