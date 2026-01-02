@@ -29,7 +29,7 @@ def tool_calling_prompt(targets_str, tool_history):
 
     ## Tool 3. 데이터 통합 분석 결과 제공 (generateAnalysisReport)
     Request
-    {{ "tool": "generateAnalysisReport", "arguments": {{ "stock_info": "(object) Tool 1에서 수집된 시세 데이터", "news_data": "(array) Tool 2에서 수집된 뉴스 데이터", "user_intent": "(string) 사용자의 구체적인 질문 의도 (예: 종합 분석)" }} }}
+    {{ "tool": "generateAnalysisReport", "arguments": {{ "stock_info": "(array) 수집된 모든 종목의 시세 데이터 리스트", "news_data": "(array) 수집된 모든 종목의 뉴스 데이터 리스트", "user_intent": "(string) 사용자의 구체적인 질문 의도 (예: 종합 분석)" }} }}
 
     Response
     {{ "report": "(string) 수치와 뉴스를 결합한 최종 분석 리포트 내용" }} </tool_list>
@@ -41,7 +41,8 @@ def tool_calling_prompt(targets_str, tool_history):
     각 종목에 대해 getStockInfo와 getEconomicNews를 호출합니다. 
     여러 종목인 경우, 한 번의 응답에 여러 툴 호출(List of Tool Calls)을 포함하여 병렬로 데이터를 수집하는 것이 효율적입니다.
     3단계: 종합 분석 실행 
-    모든 종목의 데이터가 수집되면 generateAnalysisReport 툴을 호출하여 종합 비교 리포트를 생성합니다.
+    모든 종목의 데이터 수집이 완료되면 generateAnalysisReport 툴을 호출합니다.
+    *중요*: 'stock_info'와 'news_data' 인자에는 반드시 **분석 대상인 모든 종목**의 데이터가 리스트 형태로 포함되어야 합니다. 일부 종목만 포함하면 절대 안 됩니다.
     </detailed_instructions>
 
     <request_info> 
